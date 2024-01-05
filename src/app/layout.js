@@ -1,7 +1,15 @@
+"use client"
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { ThemeModeScript } from 'flowbite-react';
+import { Web3ReactProvider } from '@web3-react/core'
+import { Web3Provider } from "@ethersproject/providers";
 
 const inter = Inter({ subsets: ['latin'] })
+
+function getLibrary(provider) {
+  return new Web3Provider(provider);
+}
 
 export const metadata = {
   title: 'Create Next App',
@@ -10,8 +18,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
+    <Web3ReactProvider getLibrary={getLibrary}>
     <html lang="en">
+      <head> <ThemeModeScript /></head>
       <body className={inter.className}>{children}</body>
     </html>
+    </Web3ReactProvider>
   )
 }

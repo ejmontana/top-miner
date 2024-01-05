@@ -9,13 +9,24 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@web3-react/core": "6.1.9",
+    "@web3-react/injected-connector": "6.0.7",
+    "@web3-react/walletconnect-connector": "6.2.13",
+    "@web3-react/walletlink-connector": "6.2.13",
     "autoprefixer": "10.4.16",
     "eslint": "8.56.0",
-    "eslint-config-next": "14.0.4",
-    "next": "14.0.4",
+    "eslint-config-next": "13.4.19",
+    "ethers": "5.5.4",
+    "eventemitter3": "^5.0.1",
+    "flowbite": "^2.2.1",
+    "flowbite-react": "^0.7.2",
+    "next": "13.4.19",
+    "phaser": "^3.70.0",
+    "phaser3spectorjs": "^0.0.8",
     "postcss": "8.4.32",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "tailwindcss": "3.4.0"
+    "tailwindcss": "3.4.0",
+    "utf-8-validate": "^5.0.10"
   }
 }
