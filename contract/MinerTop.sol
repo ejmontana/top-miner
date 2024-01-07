@@ -57,10 +57,10 @@ contract MinerTop {
     uint256 public totalChefs;
     uint256 public totalTowers;
     uint256 public totalInvested;
-    address public manager = 0xd593E54F98fe5956c9AB2720a85b6aF2d1E5d9B0;
+    address public manager = 0x3941cca2abb755BF6061CB364A1A3F3cB392c7B6;
     uint256 public startUNIX;
     uint256[] refPercent = [8,5,2];
-    IERC20 usdt = IERC20(0x337610d27c682E347C9cD60BD4b3b107C9d34dDd);
+    IERC20 usdt = IERC20(0x3b550522d662ae42FD6D57D4ceD92AF701e2fD20);
   
     constructor(uint256 startDate){
         require(startDate > 0);

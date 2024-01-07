@@ -12,8 +12,14 @@ import {
   Label,
   TextInput,
 } from "flowbite-react";
-import { useState } from "react";
-import PhaserGame from "./component/PhaserGame";
+import { useEffect, useState } from "react";
+
+import { ethers } from "ethers";
+import TopMinerABi from "./TopMiner.json";
+import UdtTokenABi from "./usdtAbi.json";
+
+import Swal from "sweetalert2";
+import Loader from "./Loader";
 
 const CoinbaseWallet = new WalletLinkConnector({
   url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
@@ -28,25 +34,142 @@ const WalletConnect = new WalletConnectConnector({
 });
 
 const Injected = new InjectedConnector({
-  supportedChainIds: [1, 3, 4, 5, 42],
+  supportedChainIds: [1, 3, 4, 5, 42, 97],
 });
 
 export default function Home() {
-  const { activate, deactivate } = useWeb3React();
-
+  const { activate, active, library, account } = useWeb3React();
+  const TopMinerAddress = "0x5753d9019B8a13C9E19512B396b6c23b7F6fEf6b";
+  const TokenUsdtAddress = "0x3b550522d662ae42FD6D57D4ceD92AF701e2fD20";
   const [openModalConnect, setOpenModalConnect] = useState(false);
   const [openModalBuy, setOpenModalBuy] = useState(false);
 
-  const [DollarCoin, setDollarCoin] = useState(0.0);
+  const [DollarCoin, setDollarCoin] = useState(0);
+  const [UsdtCoin, setUsdtCoin] = useState(0);
+
+  const [ContractTopMiner, setContractTopMiner] = useState("");
+  const [ContractTokenUsdt, setContractTokenUsdt] = useState("");
+  const gasLimit = 300000; //100000
+  const [TokenApproved, setTokenApproved] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const CalculateCoin = (e) => {
-  
-    setDollarCoin(e.target.value / 0.01);
+    const dolarCoind = e.target.value / 0.01;
+    setDollarCoin(dolarCoind);
+    console.log("CalculateCoin", e.target.value);
+    setUsdtCoin(e.target.value);
+    CoinApproved(e.target.value);
   };
+
+  const CoinApproved = async (pSend) => {
+    ContractTokenUsdt.callStatic
+      .allowance(account, TopMinerAddress)
+      .then((result) => {
+        const formatApprr = ethers.utils.formatUnits(result.toString(), 18);
+
+        setTokenApproved(formatApprr);
+      })
+      .catch((error) => {
+        console.error("Error calling contract function:", error);
+      });
+  };
+
+  const CoinApprove = async () => {
+    try {
+      const amountToSend = ethers.utils.parseUnits(UsdtCoin.toString(), 18);
+
+      const transaction = await ContractTokenUsdt.approve(
+        TopMinerAddress,
+        amountToSend
+        // { gasLimit }
+      );
+
+      console.log("Transaction sent. Hash:", transaction.hash);
+
+      // Esperar a que la transacción se confirme
+      const receipt = await transaction.wait();
+
+      // Verificar el estado de la transacción
+      if (receipt.status === 1) {
+        console.log("Transaction successful!");
+      } else {
+        console.log("Transaction failed. Receipt:", receipt);
+        Swal.fire({
+          title: "Try again",
+          text: "Transaction failed",
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error calling contract function:", error);
+      Swal.fire({
+        title: "Try again",
+        text: "An error occurred",
+        icon: "error",
+      });
+    }
+  };
+
+  const buyCoind = async () => {
+    try {
+      const amountToSend = ethers.utils.parseUnits(UsdtCoin.toString(), 18);
+
+      const transaction = await ContractTopMiner.addCoins(
+        "0x3941cca2abb755BF6061CB364A1A3F3cB392c7B6",
+        amountToSend
+        // { gasLimit }
+      );
+
+      console.log("Transaction sent. Hash:", transaction.hash);
+
+      // Esperar a que la transacción se confirme
+      const receipt = await transaction.wait();
+
+      // Verificar el estado de la transacción
+      if (receipt.status === 1) {
+        console.log("Transaction successful!");
+      } else {
+        console.log("Transaction failed. Receipt:", receipt);
+        Swal.fire({
+          title: "Try again",
+          text: "Transaction failed",
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error calling contract function:", error);
+      Swal.fire({
+        title: "Try again",
+        text: "An error occurred",
+        icon: "error",
+      });
+    }
+  };
+
+  useEffect(() => {
+    activate(Injected);
+    if (active) {
+      const contractTopMiner = new ethers.Contract(
+        TopMinerAddress,
+        TopMinerABi,
+        library.getSigner(account)
+      );
+      const contractTokenUsdt = new ethers.Contract(
+        TokenUsdtAddress,
+        UdtTokenABi,
+        library.getSigner(account)
+      );
+
+      setContractTopMiner(contractTopMiner);
+      setContractTokenUsdt(contractTokenUsdt);
+    }
+  }, [active, library, account]);
 
   return (
     <main className="space-y-12">
       <Navbar fluid>
+      {loading && <Loader />}
+
         <Navbar.Brand href="https://flowbite-react.com">
           <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
             Top Miner
@@ -143,7 +266,19 @@ export default function Home() {
               />
             </div>
             <div className="w-full">
-              <Button color="success">Buy</Button>
+              {TokenApproved >= UsdtCoin ? (
+                <Button
+                  color="failure"
+                  onClick={buyCoind}
+                  disabled={!(UsdtCoin > 0)}
+                >
+                  Buy
+                </Button>
+              ) : (
+                <Button color="success" onClick={(e) => CoinApprove(e)}>
+                  Approve
+                </Button>
+              )}
             </div>
           </div>
         </Modal.Body>
@@ -153,7 +288,7 @@ export default function Home() {
         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
           Miner
         </h1>
-        <div class="grid grid-cols-4 gap-4 px-12">
+        <div className="grid grid-cols-4 gap-4 px-12">
           <div>
             <Card className="max-w-sm" imgSrc="/img/MineriaOro1.jpg">
               <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -279,6 +414,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+
     </main>
   );
 }

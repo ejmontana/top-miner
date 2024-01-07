@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@sweetalert2/theme-dark": "^5.0.15",
     "@web3-react/core": "6.1.9",
     "@web3-react/injected-connector": "6.0.7",
     "@web3-react/walletconnect-connector": "6.2.13",
@@ -21,11 +22,10 @@
     "flowbite": "^2.2.1",
     "flowbite-react": "^0.7.2",
     "next": "13.4.19",
-    "phaser": "^3.70.0",
-    "phaser3spectorjs": "^0.0.8",
     "postcss": "8.4.32",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "sweetalert2": "^11.10.2",
     "tailwindcss": "3.4.0",
     "utf-8-validate": "^5.0.10"
   }
