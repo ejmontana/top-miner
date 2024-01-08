@@ -52,6 +52,19 @@ export default function Home() {
   const gasLimit = 300000; //100000
   const [TokenApproved, setTokenApproved] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [Info, setInfo] = useState([]);
+
+  const init = async () =>{
+    try {
+     const info = await ContractTopMiner.callStatic.towers(account)
+    console.log(info["coins"].toString())
+     setInfo(info)
+     console.log(info)
+    } catch (error) {
+     console.log(error)
+      
+    }
+  }
 
   const CalculateCoin = (e) => {
     const dolarCoind = e.target.value / 0.01;
@@ -128,6 +141,7 @@ export default function Home() {
       // Verificar el estado de la transacción
       if (receipt.status === 1) {
         console.log("Transaction successful!");
+        
       } else {
         console.log("Transaction failed. Receipt:", receipt);
         Swal.fire({
@@ -165,6 +179,15 @@ export default function Home() {
     }
   }, [active, library, account]);
 
+
+  useEffect(() => {
+    if (active) {
+      init()
+
+    }
+ 
+  }, [ContractTopMiner, ContractTokenUsdt]);
+
   return (
     <main className="space-y-12">
       <Navbar fluid>
@@ -176,6 +199,8 @@ export default function Home() {
           </span>
         </Navbar.Brand>
         <div className="flex md:order-2 space-x-4">
+          <span className="self-center whitespace-nowrap text-md font-semibold dark:text-white">Minerales: {Info["money"]?.toString()??0}</span>
+          <span className="self-center whitespace-nowrap text-md font-semibold dark:text-white">Dollar: {Info["coins"]?.toString()??0}</span>
           <Button color="success" onClick={() => setOpenModalBuy(true)}>
             Buy
           </Button>
