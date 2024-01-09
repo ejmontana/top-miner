@@ -13,12 +13,13 @@ import {
   TextInput,
 } from "flowbite-react";
 import { useEffect, useState } from "react";
+import '@sweetalert2/theme-borderless/borderless.css';
 
 import { ethers } from "ethers";
 import TopMinerABi from "./TopMiner.json";
 import UdtTokenABi from "./usdtAbi.json";
 
-import Swal from "sweetalert2";
+import Swal from 'sweetalert2';
 import Loader from "./Loader";
 
 const CoinbaseWallet = new WalletLinkConnector({
@@ -54,17 +55,17 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [Info, setInfo] = useState([]);
 
-  const init = async () =>{
+  const init = async () => {
     try {
-     const info = await ContractTopMiner.callStatic.towers(account)
-    console.log(info["coins"].toString())
-     setInfo(info)
-     console.log(info)
+      const info = await ContractTopMiner.callStatic.towers(account);
+      console.log(info["coins"].toString());
+      setInfo(info);
+      console.log(info);
+   
     } catch (error) {
-     console.log(error)
-      
+      console.log(error);
     }
-  }
+  };
 
   const CalculateCoin = (e) => {
     const dolarCoind = e.target.value / 0.01;
@@ -89,6 +90,8 @@ export default function Home() {
 
   const CoinApprove = async () => {
     try {
+      setLoading(true);
+
       const amountToSend = ethers.utils.parseUnits(UsdtCoin.toString(), 18);
 
       const transaction = await ContractTokenUsdt.approve(
@@ -97,16 +100,25 @@ export default function Home() {
         // { gasLimit }
       );
 
-      console.log("Transaction sent. Hash:", transaction.hash);
-
       // Esperar a que la transacción se confirme
       const receipt = await transaction.wait();
 
       // Verificar el estado de la transacción
       if (receipt.status === 1) {
+        setTokenApproved(UsdtCoin);
+        setLoading(false);
+        const transactionHash = "https://testnet.bscscan.com/tx/"+ receipt.transactionHash;
+        Swal.fire({
+          title: "Good",
+          html: `<span  >Hash: <a target="_blank" href="${transactionHash}" id="hashLink">${receipt.transactionHash}</a></span>`,
+          icon: "success",
+          
+        });
         console.log("Transaction successful!");
       } else {
         console.log("Transaction failed. Receipt:", receipt);
+        setLoading(false);
+
         Swal.fire({
           title: "Try again",
           text: "Transaction failed",
@@ -121,10 +133,13 @@ export default function Home() {
         icon: "error",
       });
     }
+    setLoading(false);
   };
 
   const buyCoind = async () => {
     try {
+      setLoading(true);
+
       const amountToSend = ethers.utils.parseUnits(UsdtCoin.toString(), 18);
 
       const transaction = await ContractTopMiner.addCoins(
@@ -137,11 +152,17 @@ export default function Home() {
 
       // Esperar a que la transacción se confirme
       const receipt = await transaction.wait();
+      const transactionHash = "https://testnet.bscscan.com/tx/"+ receipt.transactionHash;
 
       // Verificar el estado de la transacción
       if (receipt.status === 1) {
-        console.log("Transaction successful!");
-        
+        Swal.fire({
+          title: "Good",
+          html: `<span  >Hash: <a target="_blank" href="${transactionHash}" id="hashLink">${receipt.transactionHash}</a></span>`,
+          icon: "success",
+          
+        });
+
       } else {
         console.log("Transaction failed. Receipt:", receipt);
         Swal.fire({
@@ -158,6 +179,8 @@ export default function Home() {
         icon: "error",
       });
     }
+    setLoading(false);
+
   };
 
   useEffect(() => {
@@ -179,19 +202,16 @@ export default function Home() {
     }
   }, [active, library, account]);
 
-
   useEffect(() => {
     if (active) {
-      init()
-
+      init();
     }
- 
   }, [ContractTopMiner, ContractTokenUsdt]);
 
   return (
     <main className="space-y-12">
       <Navbar fluid>
-      {loading && <Loader />}
+        {loading && <Loader />}
 
         <Navbar.Brand href="https://flowbite-react.com">
           <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
@@ -199,8 +219,12 @@ export default function Home() {
           </span>
         </Navbar.Brand>
         <div className="flex md:order-2 space-x-4">
-          <span className="self-center whitespace-nowrap text-md font-semibold dark:text-white">Minerales: {Info["money"]?.toString()??0}</span>
-          <span className="self-center whitespace-nowrap text-md font-semibold dark:text-white">Dollar: {Info["coins"]?.toString()??0}</span>
+          <span className="self-center whitespace-nowrap text-md font-semibold dark:text-white">
+            Minerales: {Info["money"]?.toString() ?? 0}
+          </span>
+          <span className="self-center whitespace-nowrap text-md font-semibold dark:text-white">
+            Dollar: {Info["coins"]?.toString() ?? 0}
+          </span>
           <Button color="success" onClick={() => setOpenModalBuy(true)}>
             Buy
           </Button>
@@ -219,7 +243,7 @@ export default function Home() {
         <Modal.Header />
         <Modal.Body>
           <div className="space-y-6">
-            <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+            <h3 className="text-xxl font-medium text-gray-900 dark:text-white">
               Select Wallet
             </h3>
 
@@ -439,7 +463,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
     </main>
   );
 }
